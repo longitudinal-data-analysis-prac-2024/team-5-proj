@@ -1,0 +1,92 @@
+---
+title: "CU traits_Saliva"
+author: "Elena"
+date: "2024-05-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data wrangling
+
+```{r}
+#Select variables
+data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22) %>% mutate(ID = as.factor(ID))
+
+#Create sum scores
+data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
+
+data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='ICU05' | Item =='ICU13' | Item =='ICU15'|Item =='ICU16'| Item =='ICU17' | Item =='ICU23' | Item =='ICU24' | Item == 'ICU08' | Item == 'ICU01' | Item == "ICU14" | Item == "ICU19", 3-Score,Score))
+
+data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == "ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
+                                                            Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == "ICU19" | Item == "ICU22" ~"Unemotional_subs",
+                                                              TRUE ~ "Callous_subs"))
+
+data_grouped<- data_assigned %>% mutate(Subscale = as.factor(Subscale)) %>% group_by(ID, Subscale) %>% mutate(sum_scales = sum(Score))
+
+# no need to parse them into different subscales just take the sums
+
+#Visualise scores
+
+summary_CU <-  data_grouped %>% group_by(Subscale) %>%
+  summarise(n=n(),
+            mean=mean(sum_scales, na.rm = T),
+            sd=sd(sum_scales, na.rm = T),
+            se=sd/sqrt(n),
+            lower=mean-se*1.96,
+            upper=mean+se*1.96)
+summary_CU
+
+
+
+#X - axis is minutes since session initiation, y axis is cortisol, lines groups by high (+1 SD), Average (mean), and low (-1SD)
+```
+
+```{r}
+#let's start with cortisol reactivity and CU traits only and then can test whether cortisol reactivity mediates physical aggression or somehting similar in the Hostile Attribution Scale
+data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22) %>% mutate(ID = as.factor(ID))
+
+#data gathered
+data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
+
+#Reverse coding
+
+data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='ICU05' | Item =='ICU13' | Item =='ICU15'|Item =='ICU16'| Item =='ICU17' | Item =='ICU23' | Item =='ICU24' | Item == 'ICU08' | Item == 'ICU01' | Item == "ICU14" | Item == "ICU19", 3-Score,Score))
+
+#Create sums of callous, unemotional and uncarng traits
+
+data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == "ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
+                                                            Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == "ICU19" | Item == "ICU22" ~"Unemotional_subs",
+                                                              TRUE ~ "Callous_subs"))
+
+#All saliva samples gathered
+
+data_saliva_gathered<- data_assigned %>% gather(Time, Saliva, Saliva1Time: Saliva7Time)
+
+data_factored2<- factor(data_factored$Time, levels=c('Saliva1Time', 'Saliva2Time', 'Saliva3Time', 'Saliva4Time', 'Saliva5Time', 'Saliva6Time', 'Saliva7Time'))
+
+other_dataset<- data_gathered %>% group_by(ID) %>% mutate(sum_uncaring = ICU03 + ICU05 + ICU13 + ICU15 + ICU16 + ICU17 + ICU23 + ICU24)
+
+#data_sums<- data_reversed %>% mutate(Uncaring_subs = ICU03 + ICU05 + ICU13 + ICU15 + ICU16 + ICU17 + ICU23 + ICU24, Callous_subs = ICU02 + ICU04 + ICU07 + ICU08 + ICU09 + ICU10 + ICU11 + ICU12 + ICU18 + ICU20 + ICU21, Unemotional_subs = ICU01 + ICU06 + ICU14 + ICU19 + ICU22)
+
+#can check trajectories of people low versus high in CU traits
+
+#can do conduct disorder symptoms with high versus low callous unemotional traits
+```
+
+
+```{r}
+#data_filtered<- data %>% select(depdxma, tleyopca, EXTSXA, INTSXA) %>% mutate(maternal_depression = as.factor(depdxma), child_internalising = INTSXA, life_events = tleyopca)
+
+#model_internalising <- lm(child_internalising ~ maternal_depression, data=data_filtered)
+#summary(model_internalising)
+
+#model_internalising_event <- lm(child_internalising ~ life_events + maternal_depression, data=data_filtered)
+#summary(model_internalising_event)
+
+#model_event <- lm(child_internalising ~ life_events, data=data_filtered)
+#summary(model_event)
+`````````
+
