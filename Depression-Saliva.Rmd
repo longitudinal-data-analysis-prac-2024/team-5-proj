@@ -14,8 +14,6 @@ Load libraries and data
 library(foreign)
 library(tidyverse)
 library(lme4)
-library(sem)
-library(semPlot)
 
 data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
