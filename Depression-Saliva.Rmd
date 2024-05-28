@@ -60,7 +60,7 @@ Linear mixed effects model
 
 contrasts(data_gathered$Time) <- contr.poly(7) #polynomial contrast codes are chosen because the blocks are ordinal and equally
 
-mod <- afex::mixed(Saliva ~ Time*depdxma + (1|ID), data=data_gathered, check_contrasts = FALSE, method="KR")
+mod <- afex::mixed(Saliva ~ Time*depdxma + (1|ID), data=data_gathered, check_contrasts = FALSE, method="KR") #andrea suggested to add random slopes of time to see how slopes vary.
 summary(mod)
 mod #significant effect of time, non-significant interaction term
 
