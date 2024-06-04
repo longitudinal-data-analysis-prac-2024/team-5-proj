@@ -29,29 +29,90 @@ data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Sc
 data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='ICU05' | Item =='ICU13' | Item =='ICU15'|Item =='ICU16'| Item =='ICU17' | Item =='ICU23' | Item =='ICU24' | Item == 'ICU08' | Item == 'ICU01' | Item == "ICU14" | Item == "ICU19", 3-Score,Score))
 
 #data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == #"ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
-                                                            Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == #"ICU19" | Item == "ICU22" ~"Unemotional_subs",
-                                                              TRUE ~ "Callous_subs"))
+                                                           # Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == #"ICU19" | Item == "ICU22" ~"Unemotional_subs",
+                                                             # TRUE ~ "Callous_subs"))
 
 #data_grouped<- data_assigned %>% mutate(Subscale = as.factor(Subscale)) %>% group_by(ID, Subscale) %>% mutate(sum_scales = sum(Score))
 
 #OR
 
-data_summed<- data_reversed %>% group_by(ID) %>% mutate(sum_score = sum(Score))
+data_summed<- data_reversed %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score))
+
+#Gather saliva/ time
+
+data_gather_saliva<- data_summed %>% gather(Time, Saliva, Saliva1Time:Saliva7Time)
+
+min(data_gather_saliva$sum_score)
+max(data_gather_saliva$sum_score)
 
 # no need to parse them into different subscales just take the sums
 
+#Take the mean and +-sd
+```
+
+
+Summary Stats
+```{r}
 #Visualise scores
 
-summary_CU <-  data_summed %>% group_by(sum_score) %>%
+summary_CU <-  data_gather_saliva%>% ungroup()%>%
   summarise(n=n(),
-            mean=mean(sum_scales, na.rm = T),
-            sd=sd(sum_scales, na.rm = T),
+            mean=mean(sum_score, na.rm = T),
+            sd=sd(sum_score, na.rm = T),
             se=sd/sqrt(n),
             lower=mean-se*1.96,
             upper=mean+se*1.96)
 summary_CU
 
 
+#Mean score is 17.12626	, sd is 8.812142	
 
 #X - axis is minutes since session initiation, y axis is cortisol, lines groups by high (+1 SD), Average (mean), and low (-1SD)
+
+#Group by high low baseline
+
+data_grouped<- data_gather_saliva %>% mutate(Grouping = case_when(sum_score > 25.938402 ~ "High",
+                                                             sum_score < 8.314118 ~ "Low",
+                                                             TRUE ~ "Medium"))%>% mutate(Time = as.factor(Time))
+
+
+data_grouped$Grouping <- factor(data_grouped$Grouping, levels=c('Low', 'Medium', 'High'))
+  
+                                        
 ```
+
+Making plots
+
+```{r}
+summary <-  data_grouped %>% group_by(Time, Grouping) %>%
+  summarise(n=n(),
+            mean=mean(Saliva, na.rm = T),
+            sd=sd(Saliva, na.rm = T),
+            se=sd/sqrt(n),
+            lower=mean-se*1.96,
+            upper=mean+se*1.96)
+summary
+
+ggplot(summary, aes(x = Time, y = mean, group = Grouping)) +
+  geom_line(aes(lty = as.character(Grouping), color = Grouping),
+            position = position_dodge(width = 0.1)) +
+  geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
+                position = position_dodge(width = 0.1)) +
+  geom_point(aes(shape = as.character(Grouping)),
+             position = position_dodge(width = 0.1)) +
+  guides(lty = "none", shape = "none")+
+  theme_classic()+
+  labs(x="Sample Time",y="Saliva")
+```
+Run analysis
+```{r}
+contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
+
+mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_grouped, check_contrasts = FALSE, method="LRT") #andrea suggested to add random slopes of time to see how slopes vary.
+summary(mod)
+mod #significant effect of time, non-significant interaction term
+
+
+#We have significant interactions - smaller change for the high versus low CU traits
+```
+
