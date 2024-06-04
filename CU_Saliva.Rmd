@@ -28,17 +28,21 @@ data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Sc
 
 data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='ICU05' | Item =='ICU13' | Item =='ICU15'|Item =='ICU16'| Item =='ICU17' | Item =='ICU23' | Item =='ICU24' | Item == 'ICU08' | Item == 'ICU01' | Item == "ICU14" | Item == "ICU19", 3-Score,Score))
 
-data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == "ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
-                                                            Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == "ICU19" | Item == "ICU22" ~"Unemotional_subs",
+#data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == #"ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
+                                                            Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == #"ICU19" | Item == "ICU22" ~"Unemotional_subs",
                                                               TRUE ~ "Callous_subs"))
 
-data_grouped<- data_assigned %>% mutate(Subscale = as.factor(Subscale)) %>% group_by(ID, Subscale) %>% mutate(sum_scales = sum(Score))
+#data_grouped<- data_assigned %>% mutate(Subscale = as.factor(Subscale)) %>% group_by(ID, Subscale) %>% mutate(sum_scales = sum(Score))
+
+#OR
+
+data_summed<- data_reversed %>% group_by(ID) %>% mutate(sum_score = sum(Score))
 
 # no need to parse them into different subscales just take the sums
 
 #Visualise scores
 
-summary_CU <-  data_grouped %>% group_by(Subscale) %>%
+summary_CU <-  data_summed %>% group_by(sum_score) %>%
   summarise(n=n(),
             mean=mean(sum_scales, na.rm = T),
             sd=sd(sum_scales, na.rm = T),

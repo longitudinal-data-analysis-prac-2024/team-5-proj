@@ -22,17 +22,26 @@ Data wrangling
 
 ```{r}
 #Select variables
-data_selected<- data %>% select(ID, depdxma, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done) %>% mutate(ID = as.factor(ID))
+data_selected<- data %>% select(ID, depdxma, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, GENDER) %>% mutate(ID = as.factor(ID))
+
+#Re-code gender - male = 0, female = 1
+
+data_recoded<- data_selected %>% mutate(GENDER = recode(GENDER, "male" = "0", "female" = "1")) %>% mutate(Gender = as.factor(GENDER))
+
+#Check missing data/ remove
+
+data_check<- data_recoded %>% filter(Saliva1done == "yes" & Saliva2done == "yes" & Saliva3done == "yes" & Saliva4done == "yes" & Saliva5done == "yes" & Saliva6done == "yes" & Saliva7done == "yes")
 
 #Create time and saliva variables
 
-data_gathered<- data_selected %>% gather(Time, Saliva, Saliva1Time:Saliva7Time)%>%filter(Saliva1done == "yes" & Saliva2done == "yes" & Saliva3done == "yes" & Saliva4done == "yes" & Saliva5done == "yes" & Saliva6done == "yes" & Saliva7done == "yes")%>% select(ID, depdxma, Time, Saliva)%>% filter(depdxma=="1" | depdxma == "0") %>% mutate(Time = as.factor(Time)) #filter only those that completed all samples and then select only the relevant columns.
+data_gathered<- data_check %>% gather(Time, Saliva, Saliva1Time:Saliva7Time)%>%filter(Saliva1done == "yes" & Saliva2done == "yes" & Saliva3done == "yes" & Saliva4done == "yes" & Saliva5done == "yes" & Saliva6done == "yes" & Saliva7done == "yes")%>% select(ID, depdxma, Time, Saliva, Gender)%>% filter(depdxma=="1" | depdxma == "0") %>% mutate(Time = as.factor(Time)) #filter only those that completed all samples and then select only the relevant columns.
+
 ```
 
 Summary statistics
 
 ```{r}
-summary <-  data_gathered %>% group_by(Time, depdxma) %>%
+summary <-  data_gathered %>% group_by(Time, depdxma, Gender) %>%
   summarise(n=n(),
             mean=mean(Saliva, na.rm = T),
             sd=sd(Saliva, na.rm = T),
@@ -50,7 +59,8 @@ ggplot(summary, aes(x = Time, y = mean, group = depdxma)) +
              position = position_dodge(width = 0.1)) +
   guides(lty = "none", shape = "none")+
   theme_classic()+
-  labs(x="Sample Time",y="Saliva")
+  labs(x="Sample Time",y="Saliva")+
+  facet_wrap(~Gender)
 ```
 
 Linear mixed effects model
@@ -58,11 +68,14 @@ Linear mixed effects model
 ```{r}
 #assign contrast codes
 
-contrasts(data_gathered$Time) <- contr.poly(7) #polynomial contrast codes are chosen because the blocks are ordinal and equally
+contrasts(data_gathered$Time) <- contr.poly(7) #polynomial contrast codes 
 
-mod <- afex::mixed(Saliva ~ Time*depdxma + (1|ID), data=data_gathered, check_contrasts = FALSE, method="KR") #andrea suggested to add random slopes of time to see how slopes vary.
+mod <- afex::mixed(Saliva ~ Time + (Time|ID), data=data_gathered, check_contrasts = FALSE, method="LRT") #andrea suggested to add random slopes of time to see how slopes vary.
 summary(mod)
 mod #significant effect of time, non-significant interaction term
+
+mod2<- lme4::lmer(Saliva ~ Time + (Time|ID), data=data_gathered)
+summary(mod2)
 
 #Test assumptions of linear mixed effects models
 
