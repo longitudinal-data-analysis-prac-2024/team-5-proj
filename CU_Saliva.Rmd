@@ -18,42 +18,64 @@ data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
 
 Data wrangling
-
 ```{r}
 #Select variables
 data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22) %>% mutate(ID = as.factor(ID))
 
-#Create sum scores
+#Re-code CU variables
+
 data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
 
+#Some items are reverse-coded
+
 data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='ICU05' | Item =='ICU13' | Item =='ICU15'|Item =='ICU16'| Item =='ICU17' | Item =='ICU23' | Item =='ICU24' | Item == 'ICU08' | Item == 'ICU01' | Item == "ICU14" | Item == "ICU19", 3-Score,Score))
+```
 
-#data_assigned<- data_reversed %>% mutate(Subscale = case_when(Item == "ICU03" | Item == "ICU05" | Item == "ICU13" | Item == #"ICU15" | Item == "ICU16" | Item == "ICU17" | Item == "ICU23" | Item == "ICU24" ~ "Uncaring_subs",
-                                                           # Item == "ICU01" | Item == "ICU06" | Item == "ICU14" | Item == #"ICU19" | Item == "ICU22" ~"Unemotional_subs",
-                                                             # TRUE ~ "Callous_subs"))
+Check missingness in CU trait questions and create sum scores
+```{r}
+data_CU_filtered<- data_reversed %>% filter(!is.na(Score))
+data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))
+```
 
-#data_grouped<- data_assigned %>% mutate(Subscale = as.factor(Subscale)) %>% group_by(ID, Subscale) %>% mutate(sum_scales = sum(Score))
+Gather and check missingness in saliva data
+```{r}
+#Gather saliva / time
 
-#OR
+data_gather_saliva<- data_summed %>% gather(Time, Saliva, Saliva1Time:Saliva7Time) %>% gather(Completion, Status, Saliva1done: Saliva7done)
 
-data_summed<- data_reversed %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score))
+#recode completion/ status data to check missingness
+#give 1 for completed, 0 for not completed
 
-#Gather saliva/ time
+data_gather_saliva<- data_gather_saliva %>% mutate(Status = case_when(Status == "yes" ~ 1,
+                                                             TRUE ~ 0))
+data_gather_saliva %>% group_by(Completion)%>% summarise(sum = sum(Status))
 
-data_gather_saliva<- data_summed %>% gather(Time, Saliva, Saliva1Time:Saliva7Time)
+#Attempting to remove all those that do not have completed data
 
-min(data_gather_saliva$sum_score)
-max(data_gather_saliva$sum_score)
+data_gather_saliva<- data_gather_saliva %>% filter(Status == 1)
 
-# no need to parse them into different subscales just take the sums
+#Rename Sample time - in minutes - but can't figure out when the last sample was taken.
 
-#Take the mean and +-sd
+#data_gather_saliva<- data_gather_saliva %>% mutate(Time = case_when(Time == "Saliva1Time" ~ "20mins before",
+                                                             #Time == "Saliva2Time" ~ "10mins before",
+                                                             #Time == "Saliva3Time" ~ "end of task",
+                                                             #Time == "Saliva4Time" ~ "20mins after",
+                                                             #Time == "Saliva5Time" ~ "45mins after",
+                                                             #TRUE ~ "60mins after"))%>% mutate(Time = as.factor(Time))
+
+#data_gather_saliva$Time <- factor(data_gather_saliva$Time, levels=c('20mins before', '10mins before', 'end of task', '20mins after', '45mins after', '60mins after'))
+ #Min and maximum CU trait score
+
+min(data_gather_saliva$sum_score) #0 
+max(data_gather_saliva$sum_score) #56
+
+#We use the mean +/- SD to clasify participants into high, medium and low CU trait groups
 ```
 
 
 Summary Stats
 ```{r}
-#Visualise scores
+#Summary Statistics
 
 summary_CU <-  data_gather_saliva%>% ungroup()%>%
   summarise(n=n(),
@@ -65,20 +87,19 @@ summary_CU <-  data_gather_saliva%>% ungroup()%>%
 summary_CU
 
 
-#Mean score is 17.12626	, sd is 8.812142	
+#Mean score is 17.12512	, sd is 8.643162	
 
 #X - axis is minutes since session initiation, y axis is cortisol, lines groups by high (+1 SD), Average (mean), and low (-1SD)
 
 #Group by high low baseline
 
-data_grouped<- data_gather_saliva %>% mutate(Grouping = case_when(sum_score > 25.938402 ~ "High",
-                                                             sum_score < 8.314118 ~ "Low",
+data_grouped<- data_gather_saliva %>% mutate(Grouping = case_when(sum_score > 25.76828 ~ "High",
+                                                             sum_score < 8.481958 ~ "Low",
                                                              TRUE ~ "Medium"))%>% mutate(Time = as.factor(Time))
 
 
 data_grouped$Grouping <- factor(data_grouped$Grouping, levels=c('Low', 'Medium', 'High'))
-  
-                                        
+                                  
 ```
 
 Making plots
@@ -103,6 +124,12 @@ ggplot(summary, aes(x = Time, y = mean, group = Grouping)) +
   guides(lty = "none", shape = "none")+
   theme_classic()+
   labs(x="Sample Time",y="Saliva")
+
+#Create bar plot
+
+ggplot(summary, aes(x=Time, y=mean, fill=Grouping)) +
+  geom_bar(stat='identity',position = "dodge") + 
+  theme_minimal()
 ```
 Run analysis
 ```{r}
@@ -112,7 +139,16 @@ mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_grouped, check_con
 summary(mod)
 mod #significant effect of time, non-significant interaction term
 
-
 #We have significant interactions - smaller change for the high versus low CU traits
+
+#New attempt
+
+mod_simple<- afex::mixed(Saliva ~ 1 + Time + (Time|ID), data=data_grouped, check_contrasts = FALSE)
+summary(mod_simple)
+
+mod_complex<- afex::mixed(Saliva ~ 1 + Time * Grouping + (Time|ID), data=data_grouped, check_contrasts = FALSE)
+summary(mod_complex)
+
+#more complex model better
 ```
 
