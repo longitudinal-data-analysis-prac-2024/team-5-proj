@@ -33,8 +33,8 @@ data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='
 
 Check missingness in CU trait questions and create sum scores
 ```{r}
-data_CU_filtered<- data_reversed %>% filter(!is.na(Score))
-data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))
+data_CU_filtered<- data_reversed #%>% filter(!is.na(Score))
+data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score))
 ```
 
 Gather and check missingness in saliva data
