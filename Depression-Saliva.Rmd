@@ -70,11 +70,11 @@ Linear mixed effects model
 
 contrasts(data_gathered$Time) <- contr.poly(7) #polynomial contrast codes 
 
-mod <- afex::mixed(Saliva ~ Time + (Time|ID), data=data_gathered, check_contrasts = FALSE, method="LRT") #andrea suggested to add random slopes of time to see how slopes vary.
+mod <- afex::mixed(Saliva ~ Time + (1|ID), data=data_gathered, check_contrasts = FALSE) #andrea suggested to add random slopes of time to see how slopes vary.
 summary(mod)
 mod #significant effect of time, non-significant interaction term
 
-mod2<- lme4::lmer(Saliva ~ Time + (Time|ID), data=data_gathered)
+mod2<- lme4::lmer(Saliva ~ Time*depdxma*Gender + (1|ID), data=data_gathered)
 summary(mod2)
 
 #Test assumptions of linear mixed effects models

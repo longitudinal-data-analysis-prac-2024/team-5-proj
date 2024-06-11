@@ -135,7 +135,11 @@ Run analysis
 ```{r}
 contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
 
-mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_grouped, check_contrasts = FALSE, method="LRT") #andrea suggested to add random slopes of time to see how slopes vary.
+contrasts(data_grouped$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
+                                 c2 = c(-1/2, 0, 1/2))
+contrasts(data_grouped$Grouping)
+
+mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_grouped, check_contrasts = FALSE) #andrea suggested to add random slopes of time to see how slopes vary.
 summary(mod)
 mod #significant effect of time, non-significant interaction term
 
