@@ -33,7 +33,7 @@ data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='
 
 Check missingness in CU trait questions and create sum scores
 ```{r}
-data_CU_filtered<- data_reversed #%>% filter(!is.na(Score))
+data_CU_filtered<- data_reversed %>% filter(!is.na(Score))
 data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score))
 ```
 
@@ -133,13 +133,21 @@ ggplot(summary, aes(x=Time, y=mean, fill=Grouping)) +
 ```
 Run analysis
 ```{r}
-contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
 
-contrasts(data_grouped$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
+#Check for missing data
+
+test<- data_grouped%>%na.omit()
+
+
+contrasts(test$Time) <- contr.poly(7) #polynomial contrast codes 
+
+contrasts(test$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
                                  c2 = c(-1/2, 0, 1/2))
-contrasts(data_grouped$Grouping)
+contrasts(test$Grouping)
 
-mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_grouped, check_contrasts = FALSE) #andrea suggested to add random slopes of time to see how slopes vary.
+#test$Saliva <- scale(test$Saliva)
+
+mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=test, check_contrasts = FALSE) #andrea suggested to add random slopes of time to see how slopes vary.
 summary(mod)
 mod #significant effect of time, non-significant interaction term
 
@@ -147,7 +155,7 @@ mod #significant effect of time, non-significant interaction term
 
 #New attempt
 
-mod_simple<- afex::mixed(Saliva ~ 1 + Time + (Time|ID), data=data_grouped, check_contrasts = FALSE)
+mod_simple<- afex::mixed(Saliva ~ 1 + Time + (Time|ID), data=test, check_contrasts = FALSE)
 summary(mod_simple)
 
 mod_complex<- afex::mixed(Saliva ~ 1 + Time * Grouping + (Time|ID), data=data_grouped, check_contrasts = FALSE)
