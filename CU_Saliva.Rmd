@@ -14,17 +14,23 @@ Load libraries
 ```{r}
 library(tidyverse)
 library(foreign)
+library(lme4)
 data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
 
 Data wrangling
 ```{r}
 #Select variables
-data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22) %>% mutate(ID = as.factor(ID))
+data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22, cdspa) %>% mutate(ID = as.factor(ID))
+
+#Conduct disorder - classify people with or without conduct disorder based on the standardised scores provided in the cdspa variable. People that have 0 are classified as "no" (CD), people that have 1 or more are classified as "yes" (CD)."yes" - 1, "no" - 0
+
+data_CD<- data_selected %>% mutate(CD = case_when(cdspa == 0 ~ "0",
+                                                       TRUE ~ "1"))%>% mutate(CD = as.factor(CD))
 
 #Re-code CU variables
 
-data_gathered<- data_selected %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
+data_gathered<- data_CD %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
 
 #Some items are reverse-coded
 
@@ -84,6 +90,7 @@ summary_CU <-  data_gather_saliva%>% ungroup()%>%
             se=sd/sqrt(n),
             lower=mean-se*1.96,
             upper=mean+se*1.96)
+
 summary_CU
 
 
@@ -99,22 +106,100 @@ data_grouped<- data_gather_saliva %>% mutate(Grouping = case_when(sum_score > 25
 
 
 data_grouped$Grouping <- factor(data_grouped$Grouping, levels=c('Low', 'Medium', 'High'))
-                                  
 ```
 
-Making plots
+Making plots for CD status
 
 ```{r}
-summary <-  data_grouped %>% group_by(Time, Grouping) %>%
+summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
   summarise(n=n(),
             mean=mean(Saliva, na.rm = T),
             sd=sd(Saliva, na.rm = T),
             se=sd/sqrt(n),
             lower=mean-se*1.96,
             upper=mean+se*1.96)
-summary
+summary_Time_CD
 
-ggplot(summary, aes(x = Time, y = mean, group = Grouping)) +
+ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
+  geom_line(aes(lty = as.character(CD), color = CD),
+            position = position_dodge(width = 0.1)) +
+  geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
+                position = position_dodge(width = 0.1)) +
+  geom_point(aes(shape = as.character(CD)),
+             position = position_dodge(width = 0.1)) +
+  guides(lty = "none", shape = "none")+
+  theme_classic()+
+  labs(x="Sample Time",y="Saliva")
+```
+
+
+```{r}
+#OR - much greater variability in the CD yes group
+
+data_CD_yes<- data_grouped %>% filter(CD == "1")
+
+data_CD_yes$Time <- as.numeric(data_CD_yes$Time)
+data_CD_yes$Saliva <- as.numeric(data_CD_yes$Saliva)
+
+# Ensure 'ID' and 'CD' are factors or characters
+data_CD_yes$ID <- as.factor(data_CD_yes$ID)
+data_CD_yes$CD <- as.factor(data_CD_yes$CD)
+
+# Remove rows with NA values in 'Time' or 'Saliva'
+data_CD_yes <- na.omit(data_CD_yes)
+
+library(ggplot2)
+
+ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  expand_limits(x = range(data_CD_yes$Time))
+```
+
+
+```{r}
+# CD no
+
+data_CD_no<- data_grouped %>% filter(CD == "0")
+
+data_CD_no$Time <- as.numeric(data_CD_no$Time)
+data_CD_no$Saliva <- as.numeric(data_CD_no$Saliva)
+
+# Ensure 'ID' and 'CD' are factors or characters
+data_CD_no$ID <- as.factor(data_CD_no$ID)
+data_CD_no$CD <- as.factor(data_CD_no$CD)
+
+# Remove rows with NA values in 'Time' or 'Saliva'
+data_CD_no <- na.omit(data_CD_no)
+
+library(ggplot2)
+
+ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  expand_limits(x = range(data_CD_yes$Time))
+```
+
+Plots including CU traits
+
+```{r}
+summary_Time_Grouping_CD <-  data_grouped %>% group_by(Time, Grouping, CD) %>%
+  summarise(n=n(),
+            mean=mean(Saliva, na.rm = T),
+            sd=sd(Saliva, na.rm = T),
+            se=sd/sqrt(n),
+            lower=mean-se*1.96,
+            upper=mean+se*1.96)
+summary_Time_Grouping_CD
+
+ggplot(summary_Time_Grouping_CD, aes(x = Time, y = mean, group = Grouping)) +
   geom_line(aes(lty = as.character(Grouping), color = Grouping),
             position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
@@ -123,44 +208,71 @@ ggplot(summary, aes(x = Time, y = mean, group = Grouping)) +
              position = position_dodge(width = 0.1)) +
   guides(lty = "none", shape = "none")+
   theme_classic()+
-  labs(x="Sample Time",y="Saliva")
+  labs(x="Sample Time",y="Saliva")+
+  facet_wrap(~CD)
 
-#Create bar plot
-
-ggplot(summary, aes(x=Time, y=mean, fill=Grouping)) +
-  geom_bar(stat='identity',position = "dodge") + 
-  theme_minimal()
 ```
-Run analysis
+
+Hypothesis 1: There will be a group difference, i.e., conduct disorder or not, in terms of how the cortisol levels change over time.
+
 ```{r}
+data_grouped$CD <- factor(data_grouped$CD, levels=c('0', '1'))
 
-#Check for missing data
+data_grouped$Time <- factor(data_grouped$Time)
 
-test<- data_grouped%>%na.omit()
+contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
 
+mod_H1 <- afex::mixed(Saliva ~ Time*CD + (1|ID), data=data_grouped, check_contrasts = FALSE)
+summary(mod_H1)
 
-contrasts(test$Time) <- contr.poly(7) #polynomial contrast codes 
+#Test assumptions for linear mixed effect models
 
-contrasts(test$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
-                                 c2 = c(-1/2, 0, 1/2))
-contrasts(test$Grouping)
+tdat <- data.frame(predicted=predict(mod_H1$full_model), residual = residuals(mod_H1$full_model))
 
-#test$Saliva <- scale(test$Saliva)
+ggplot(tdat,aes(x=predicted,y=residual)) + geom_point() + geom_hline(yintercept=0, lty=3)
 
-mod <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=test, check_contrasts = FALSE) #andrea suggested to add random slopes of time to see how slopes vary.
-summary(mod)
-mod #significant effect of time, non-significant interaction term
+ggplot(tdat,aes(x=residual)) + geom_histogram(bins=40, color="black")
 
-#We have significant interactions - smaller change for the high versus low CU traits
+ggplot(tdat,aes(sample=residual)) + stat_qq() + stat_qq_line()
 
-#New attempt
+raneff <- lme4::ranef(mod_H1$full_model)
 
-mod_simple<- afex::mixed(Saliva ~ 1 + Time + (Time|ID), data=test, check_contrasts = FALSE)
-summary(mod_simple)
-
-mod_complex<- afex::mixed(Saliva ~ 1 + Time * Grouping + (Time|ID), data=data_grouped, check_contrasts = FALSE)
-summary(mod_complex)
-
-#more complex model better
+hist(raneff$ID$`(Intercept)`, breaks=15) #random effect of participant normal
 ```
+
+
+H2. Individuals in the high CU traits in the CD group will have a less steep change over time in cortisol levels.
+
+```{r}
+data_CD_yes$Time <- factor(data_CD_yes$Time)
+
+contrasts(data_CD_yes$Time) <- contr.poly(7) #polynomial contrast codes 
+
+contrasts(data_CD_yes$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
+                                 c2 = c(-1/2, 0, 1/2))
+contrasts(data_CD_yes$Grouping)
+
+mod_H2 <- afex::mixed(Saliva ~ Time + (1|ID), data=data_CD_yes, check_contrasts = FALSE)
+summary(mod_H2)
+
+mod_H2_group <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_CD_yes, check_contrasts = FALSE)
+summary(mod_H2_group)
+
+anova(mod_H2, mod_H2_group) #significant
+
+#Test assumptions for linear mixed effect models
+
+tdat <- data.frame(predicted=predict(mod_H2$full_model), residual = residuals(mod_H2$full_model))
+
+ggplot(tdat,aes(x=predicted,y=residual)) + geom_point() + geom_hline(yintercept=0, lty=3)
+
+ggplot(tdat,aes(x=residual)) + geom_histogram(bins=40, color="black")
+
+ggplot(tdat,aes(sample=residual)) + stat_qq() + stat_qq_line()
+
+raneff <- lme4::ranef(mod_H2$full_model)
+
+hist(raneff$ID$`(Intercept)`, breaks=15) #random effect of participant normal
+```
+
 
