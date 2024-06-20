@@ -78,7 +78,6 @@ max(data_gather_saliva$sum_score) #56
 #We use the mean +/- SD to clasify participants into high, medium and low CU trait groups
 ```
 
-
 Summary Stats
 ```{r}
 #Summary Statistics
@@ -117,7 +116,7 @@ summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
             sd=sd(Saliva, na.rm = T),
             se=sd/sqrt(n),
             lower=mean-se*1.96,
-            upper=mean+se*1.96)
+            upper=mean+se*1.96)%>%tibble()
 summary_Time_CD
 
 ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
@@ -153,13 +152,8 @@ library(ggplot2)
 ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
-  theme(legend.position = "none")
-
-ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
-  geom_line() +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  expand_limits(x = range(data_CD_yes$Time))
+  theme(legend.position = "none")+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
 ```
 
 
@@ -184,7 +178,8 @@ ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
   theme(legend.position = "none") +
-  expand_limits(x = range(data_CD_yes$Time))
+  expand_limits(x = range(data_CD_yes$Time))+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
 ```
 
 Plots including CU traits
@@ -218,6 +213,8 @@ Hypothesis 1: There will be a group difference, i.e., conduct disorder or not, i
 ```{r}
 data_grouped$CD <- factor(data_grouped$CD, levels=c('0', '1'))
 
+contrasts(data_grouped$CD) <- c(1/2, -1/2)
+
 data_grouped$Time <- factor(data_grouped$Time)
 
 contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
@@ -249,7 +246,7 @@ data_CD_yes$Time <- factor(data_CD_yes$Time)
 contrasts(data_CD_yes$Time) <- contr.poly(7) #polynomial contrast codes 
 
 contrasts(data_CD_yes$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
-                                 c2 = c(-1/2, 0, 1/2))
+                                 c2 = c(1/2, 0, -1/2))
 contrasts(data_CD_yes$Grouping)
 
 mod_H2 <- afex::mixed(Saliva ~ Time + (1|ID), data=data_CD_yes, check_contrasts = FALSE)
