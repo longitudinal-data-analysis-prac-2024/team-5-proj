@@ -40,7 +40,7 @@ data_reversed <- data_gathered %>% mutate(Score=if_else(Item =='ICU03'| Item =='
 Check missingness in CU trait questions and create sum scores
 ```{r}
 data_CU_filtered<- data_reversed %>% filter(!is.na(Score))
-data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score))
+data_summed<- data_CU_filtered %>% group_by(ID) %>% mutate(sum_score = sum(Score))%>% filter(!is.na(sum_score)) #remove participants that do not have a sum score
 ```
 
 Gather and check missingness in saliva data
@@ -58,29 +58,18 @@ data_gather_saliva %>% group_by(Completion)%>% summarise(sum = sum(Status))
 
 #Attempting to remove all those that do not have completed data
 
-data_gather_saliva<- data_gather_saliva %>% filter(Status == 1)
+data_gather_saliva<- data_gather_saliva %>% filter(Status == 1) #include only participants that have completed all 7 saliva samples.
 
-#Rename Sample time - in minutes - but can't figure out when the last sample was taken.
-
-#data_gather_saliva<- data_gather_saliva %>% mutate(Time = case_when(Time == "Saliva1Time" ~ "20mins before",
-                                                             #Time == "Saliva2Time" ~ "10mins before",
-                                                             #Time == "Saliva3Time" ~ "end of task",
-                                                             #Time == "Saliva4Time" ~ "20mins after",
-                                                             #Time == "Saliva5Time" ~ "45mins after",
-                                                             #TRUE ~ "60mins after"))%>% mutate(Time = as.factor(Time))
-
-#data_gather_saliva$Time <- factor(data_gather_saliva$Time, levels=c('20mins before', '10mins before', 'end of task', '20mins after', '45mins after', '60mins after'))
- #Min and maximum CU trait score
-
+#Check the minimum and maximum CU trait score
 min(data_gather_saliva$sum_score) #0 
 max(data_gather_saliva$sum_score) #56
 
 #We use the mean +/- SD to clasify participants into high, medium and low CU trait groups
 ```
 
-Summary Stats
+Summary Stats overall no groupings
 ```{r}
-#Summary Statistics
+#Summary Statistics overall no groupings
 
 summary_CU <-  data_gather_saliva%>% ungroup()%>%
   summarise(n=n(),
@@ -91,7 +80,6 @@ summary_CU <-  data_gather_saliva%>% ungroup()%>%
             upper=mean+se*1.96)
 
 summary_CU
-
 
 #Mean score is 17.12512	, sd is 8.643162	
 
@@ -106,8 +94,9 @@ data_grouped<- data_gather_saliva %>% mutate(Grouping = case_when(sum_score > 25
 
 data_grouped$Grouping <- factor(data_grouped$Grouping, levels=c('Low', 'Medium', 'High'))
 ```
+Hypothesis 1: There will be a group difference, i.e., conduct disorder or not, in terms of how the cortisol levels change over time. 
 
-Making plots for CD status
+Making plots for conduct disorder (CD) status
 
 ```{r}
 summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
@@ -119,7 +108,7 @@ summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
             upper=mean+se*1.96)%>%tibble()
 summary_Time_CD
 
-ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
+ggplot(summary_Time_CD, aes(x = as.numeric(Time), y = mean, group = CD)) +
   geom_line(aes(lty = as.character(CD), color = CD),
             position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
@@ -128,87 +117,13 @@ ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
              position = position_dodge(width = 0.1)) +
   guides(lty = "none", shape = "none")+
   theme_classic()+
-  labs(x="Sample Time",y="Saliva")
+  labs(x="Sample Time",y="Cortisol Level")+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))+
+  scale_color_discrete(
+  labels = c("No", "Yes"),
+  name = "Conduct Disorder Status")
 ```
-
-
-```{r}
-#OR - much greater variability in the CD yes group
-
-data_CD_yes<- data_grouped %>% filter(CD == "1")
-
-data_CD_yes$Time <- as.numeric(data_CD_yes$Time)
-data_CD_yes$Saliva <- as.numeric(data_CD_yes$Saliva)
-
-# Ensure 'ID' and 'CD' are factors or characters
-data_CD_yes$ID <- as.factor(data_CD_yes$ID)
-data_CD_yes$CD <- as.factor(data_CD_yes$CD)
-
-# Remove rows with NA values in 'Time' or 'Saliva'
-data_CD_yes <- na.omit(data_CD_yes)
-
-library(ggplot2)
-
-ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
-  geom_line() +
-  theme_minimal() +
-  theme(legend.position = "none")+
-scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
-```
-
-
-```{r}
-# CD no
-
-data_CD_no<- data_grouped %>% filter(CD == "0")
-
-data_CD_no$Time <- as.numeric(data_CD_no$Time)
-data_CD_no$Saliva <- as.numeric(data_CD_no$Saliva)
-
-# Ensure 'ID' and 'CD' are factors or characters
-data_CD_no$ID <- as.factor(data_CD_no$ID)
-data_CD_no$CD <- as.factor(data_CD_no$CD)
-
-# Remove rows with NA values in 'Time' or 'Saliva'
-data_CD_no <- na.omit(data_CD_no)
-
-library(ggplot2)
-
-ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
-  geom_line() +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  expand_limits(x = range(data_CD_yes$Time))+
-scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
-```
-
-Plots including CU traits
-
-```{r}
-summary_Time_Grouping_CD <-  data_grouped %>% group_by(Time, Grouping, CD) %>%
-  summarise(n=n(),
-            mean=mean(Saliva, na.rm = T),
-            sd=sd(Saliva, na.rm = T),
-            se=sd/sqrt(n),
-            lower=mean-se*1.96,
-            upper=mean+se*1.96)
-summary_Time_Grouping_CD
-
-ggplot(summary_Time_Grouping_CD, aes(x = Time, y = mean, group = Grouping)) +
-  geom_line(aes(lty = as.character(Grouping), color = Grouping),
-            position = position_dodge(width = 0.1)) +
-  geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
-                position = position_dodge(width = 0.1)) +
-  geom_point(aes(shape = as.character(Grouping)),
-             position = position_dodge(width = 0.1)) +
-  guides(lty = "none", shape = "none")+
-  theme_classic()+
-  labs(x="Sample Time",y="Saliva")+
-  facet_wrap(~CD)
-
-```
-
-Hypothesis 1: There will be a group difference, i.e., conduct disorder or not, in terms of how the cortisol levels change over time.
+Statistical Analysis (H1)
 
 ```{r}
 data_grouped$CD <- factor(data_grouped$CD, levels=c('0', '1'))
@@ -237,9 +152,89 @@ raneff <- lme4::ranef(mod_H1$full_model)
 hist(raneff$ID$`(Intercept)`, breaks=15) #random effect of participant normal
 ```
 
-
 H2. Individuals in the high CU traits in the CD group will have a less steep change over time in cortisol levels.
 
+```{r}
+#YES CD group only - much greater variability
+
+data_CD_yes<- data_grouped %>% filter(CD == "1")
+
+data_CD_yes$Time <- as.numeric(data_CD_yes$Time)
+data_CD_yes$Saliva <- as.numeric(data_CD_yes$Saliva)
+
+# Ensure 'ID' and 'CD' are factors or characters
+data_CD_yes$ID <- as.factor(data_CD_yes$ID)
+data_CD_yes$CD <- as.factor(data_CD_yes$CD)
+
+# Remove rows with NA values in 'Time' or 'Saliva'
+data_CD_yes <- na.omit(data_CD_yes)
+
+#library(ggplot2)
+
+ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none")+
+  labs(x="Sample Time",y="Cortisol Level")+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+```
+
+
+```{r}
+#NO CD group only
+
+data_CD_no<- data_grouped %>% filter(CD == "0")
+
+data_CD_no$Time <- as.numeric(data_CD_no$Time)
+data_CD_no$Saliva <- as.numeric(data_CD_no$Saliva)
+
+# Ensure 'ID' and 'CD' are factors or characters
+data_CD_no$ID <- as.factor(data_CD_no$ID)
+data_CD_no$CD <- as.factor(data_CD_no$CD)
+
+# Remove rows with NA values in 'Time' or 'Saliva'
+data_CD_no <- na.omit(data_CD_no)
+
+library(ggplot2)
+
+ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  expand_limits(x = range(data_CD_yes$Time))+
+  labs(x="Sample Time",y="Cortisol Level")+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+```
+
+Plots including CU traits
+
+```{r}
+summary_Time_Grouping_CD <-  data_grouped %>% group_by(Time, Grouping, CD) %>%
+  summarise(n=n(),
+            mean=mean(Saliva, na.rm = T),
+            sd=sd(Saliva, na.rm = T),
+            se=sd/sqrt(n),
+            lower=mean-se*1.96,
+            upper=mean+se*1.96)
+summary_Time_Grouping_CD
+
+custom_labels <- c("0" = "No CD", "1" = "Yes CD")
+
+ggplot(summary_Time_Grouping_CD, aes(x = as.numeric(Time), y = mean, group = Grouping)) +
+  geom_line(aes(lty = as.character(Grouping), color = Grouping),
+            position = position_dodge(width = 0.1)) +
+  geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
+                position = position_dodge(width = 0.1)) +
+  geom_point(aes(shape = as.character(Grouping)),
+             position = position_dodge(width = 0.1)) +
+  guides(lty = "none", shape = "none")+
+  theme_classic()+
+  labs(x="Sample Time",y="Saliva")+
+  facet_wrap(~ CD, labeller = labeller(CD = custom_labels))+
+scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+```
+
+Statistical Analysis (H2)
 ```{r}
 data_CD_yes$Time <- factor(data_CD_yes$Time)
 
