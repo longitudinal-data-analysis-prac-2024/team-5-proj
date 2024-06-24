@@ -48,17 +48,19 @@ We removed the saliva data corresponding to the seventh time-point because of mi
 
 **Hypothesis 1**
 
-We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* CD + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and condition.
+We first split the participants into a CD and no CD group. The dataset included a variable called "cdspa" which is the standardised averages of the parentaal ratings. We treated values of 0 as indicative no CD category whilst values above 1 as indicative of CD category. We made this decision because according to DSM, three or more symptoms are the threshold for the diagnosis. However, we did not have access to the scale the parents completed or the exact scoring, therefore this is a draft classification. The difference in cortisol level trajectories between these two groups can be seen in Figure 1.
 
 *Figure 1*
 ![Figure 1](Plots/CD_status_plot.png)
 *Note: Cortisol level trajectories across individuals with CD status and without.*
 
+We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* CD + (1\|ID)]. Figure 2 shows change over time (Time 1 to 7) in each CD condition for each individual.
+
 *Figure 2*
 ![Figure 2](Plots/spaghetti_plots.png)
-*Note: Cortisol level trajectories for each individual, split between CD status.*
+*Note: Cortisol level trajectories for each individual, split between CD category.*
 
-The main effect of Time (F(5, 312054.08) = 625894.279, p<.001) and the interaction between Time and Conduct Disorder Status (F(5, 312054.08) = 79.595, p<.001) were significant. The main effect of Conduct Disorder status was non-significant (F(1, 390.12) = 0, p = 0.9949). Table 1 shows the results in terms of the individual contrast-coded predictors.
+The main effect of Time (F(5, 312054.08) = 625894.279, p<.001) and the interaction between Time and Conduct Disorder Category (F(5, 312054.08) = 79.595, p<.001) were significant. The main effect of Conduct Disorder category was non-significant (F(1, 390.12) = 0, p = 0.9949). Table 1 shows the results in terms of the individual contrast-coded predictors.
 
 *Table 1*
 ![Table 1](Tables/Table_H1.png)
@@ -70,7 +72,7 @@ We used a linear mixed effects model. We focused on the subset of the sample in 
 
 *Figure 3*
 ![Figure 3](Plots/grouping_plot.png)
-*Note: Cortisol trajectories across CU trait groups and CD status*
+*Note: Cortisol trajectories across CU trait groups and CD category*
 
 Model 1: The main effect of Time was significant (F(5, 69030) = 195877, p<.001), suggesting that cortisol levels change over time. 
 
@@ -82,7 +84,7 @@ Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, 
 
 # Discussion
 
-H1: The relationship between Cortisol levels and CD Status involves changes in direction over time. Individuals with no CD status have greater linear increase of cortisol score over time. Individuals with CD status cortisol changes at a faster rate and have more changes in curvature.
+H1: The relationship between Cortisol levels and CD category involves changes in direction over time. Individuals with no CD category have greater linear increase of cortisol score over time. Individuals with CD category cortisol changes at a faster rate and have more changes in curvature.
 
 H2: Having low, medium or high CU traits affects the trajectory of cortisol levels.
 

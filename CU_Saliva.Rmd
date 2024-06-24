@@ -194,7 +194,7 @@ CD_yes_plot<-ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
   theme_minimal() +
   theme(legend.position = "none") +
   expand_limits(x = range(data_CD_yes$Time))+
-  labs(title = "CD_yes", x="Sample Time",y="Cortisol Level")+
+  labs(title = "CD status: Yes", x="Sample Time",y="Cortisol Level")+
 scale_x_continuous(breaks=c(1,2,3,4,5,6))
 ```
 
@@ -216,13 +216,13 @@ data_CD_no <- na.omit(data_CD_no)
 
 library(ggplot2)
 
-CD_no_plot<- ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
+CD_no_plot <- ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
   theme(legend.position = "none") +
-  expand_limits(x = range(data_CD_yes$Time))+
-  labs(title = "CD_no", x="Sample Time",y="Cortisol Level")+
-scale_x_continuous(breaks=c(1,2,3,4,5,6))
+  expand_limits(x = range(data_CD_yes$Time)) +
+  labs(title = "CD status: No", x = "Sample Time", y = "") +  # Setting y = "" removes the y-axis label
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))
 
 spaghetti_plots<-CD_yes_plot+CD_no_plot
 ggsave("Plots/spaghetti_plots.png", plot = spaghetti_plots, width = 8, height = 6, dpi = 300)
