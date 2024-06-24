@@ -16,6 +16,11 @@ library(tidyverse)
 library(foreign)
 library(lme4)
 library(car)
+library(broom)
+library(broom.mixed)
+library(knitr)
+library(kableExtra)
+library(xfun)
 data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
 
@@ -24,14 +29,14 @@ Data wrangling
 #Select variables
 data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22, cdspa) %>% mutate(ID = as.factor(ID))
 
-#Conduct disorder - classify people with or without conduct disorder based on the standardised scores provided in the cdspa variable. People that have 0 are classified as "no" (CD), people that have 1 or more are classified as "yes" (CD)."yes" - 1, "no" - 0
+#Conduct disorder - classify people with or without conduct disorder based on the standardized scores provided in the cdspa variable. People that have 0 are classified as "no" (CD), people that have 1 or more are classified as "yes" (CD)."yes" - 1, "no" - 0
 
 data_CD<- data_selected %>% mutate(CD = case_when(cdspa == 0 ~ "0",
                                                        TRUE ~ "1"))%>% mutate(CD = as.factor(CD))
 
 #Re-code CU variables
 
-data_gathered<- data_CD %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
+data_gathered<- data_CD %>% gather(Item, Score, ICU03:ICU22) %>% mutate(Score = dplyr::recode(Score, 'not at all true' = '0', 'somewhat true' = '1', 'very true' = '2', 'definitely true' = '3'))%>% mutate(Score = as.numeric(Score))
 
 #Some items are reverse-coded
 
