@@ -28,39 +28,36 @@ Hypotheses:
 
 Four hundred children were recruited from the National Evaluation of Sure Start's study. Children were first seen at the age of 3, and followed up at the age of 8 to 10.
 
-**Measures**
-The Inventory of Callous-Unemotional Traits (ICU) – 24-item questionnaire designed to provide an assessment of callous unemotional traits. This has three subscales: Callousness, Uncaring and Unemotional. The dataset used the Caregiver (Parent) report version of the questionnaire. 
+**Measures** The Inventory of Callous-Unemotional Traits (ICU) -- 24-item questionnaire designed to provide an assessment of callous unemotional traits. This has three subscales: Callousness, Uncaring and Unemotional. The dataset used the Caregiver (Parent) report version of the questionnaire.
 
-The rating scale for items is on a 4-point Likert scale ranging from 0 (not at all true) to 3 (definitely true) – includes certain reverse coded items. A list of the items can be seen in the X file.
+The rating scale for items is on a 4-point Likert scale ranging from 0 (not at all true) to 3 (definitely true) -- includes certain reverse coded items. A list of the items can be seen in the X file.
 
 **Procedure**
 
-Cortisol level: cortisol was assessed from saliva samples, which were collected 20 minutes, 10 minutes, and at the end of the Social Provocation Task. At least 1 ml of passive drool was collected from participants.
+Cortisol level: cortisol was assessed from saliva samples, which were collected 20 minutes and 10 minutes prior to the Social Provocation Task, at the end of the task, and 20, 45, 60 minutes following the end of the task. The 7th saliva sample was collected before bedtime. At least 1 ml of passive drool was collected from participants.
 
 Social Provocation Task: the task lasted for approximately minutes. Children were told they were going to play a video game against an opponent, who was actually a confederate. The task intended to provoke anger, frustration, and embarrassment in children. Children were instructed to undergo a practice round and two competitive rounds. Children were required to move the cursor to a target on the screen as quickly and accurately as possible. The practice round was designed so that the children performed poorly. The competitive rounds were designed so that the opponent always scored more points than the child could score in the previous rounds. Each round including the practice round finished with derogatory comments about the child's poor performance.
 
 Children and parents were debriefed at the end of the study, but children were unaware that the game was manipulated.
 
-#Results
+# **Results**
 
 Participants that did not have a cortisol score for each of the seven time points were removed from analyses.
 
-**Hypothesis 1** 
+**Hypothesis 1**
 
-We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: [Cortisol ~ Time * CD + (1|ID)]. Figure X shows change over time (Time 1 to 7) and condition.
+We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* CD + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and condition.
 
-The results of the model ar presented in Table X.
+The results of the model are presented in Table X.
 
-**Hypothesis 2** 
+**Hypothesis 2**
 
-We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. The dependent variable was the cortisol levels (numeric), the independent variables was callous unemotional traits grouping (contrast-coded, refer to contrast codes in Table X) and Time was polynomial contrast coded. A random effect of participant ID was included in the model. The final model was: [Cortisol ~ Time * Grouping + (1|ID)]. Figure X shows change over time (Time 1 to 7) and CU grouping.
+We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. The dependent variable was the cortisol levels (numeric), the independent variables was callous unemotional traits grouping (contrast-coded, refer to contrast codes in Table X) and Time was polynomial contrast coded. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* Grouping + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and CU grouping.
 
-The results of the model ar presented in Table X.
+The results of the model are presented in Table X.
 
-#Discussion
+# Discussion
 
+limitations: Future research can also consider gathering resting-state cortisol to gain a more complete understanding of the cortisol trajectories. This is because previous literature has suggested that resting-state cortisol is not as subjective to individual differences in immediate reaction towards novel stressors, compared to task-based cortisol (Shoal et al., 2003). Specifically, Shoal et al. (2003) have suggested that the cortisol sample collected at the end of the task could be used as an index of resting-state cortisol level. This was because people had passed the anticipation phase and the stressors were no longer novel, which led to a lower and more habituated cortisol concentration. However, this method may depend on the task used, for example, children in the present study were still provoked by the opponents by the derogatory comments at the end of the task, which would continuously affect cortisol levels. Nevertheless, it might still be useful for future research to collect resting-state cortisol by collecting morning saliva samples.
 
-
-
-
-
+Furthermore, while this study used multiple measures of cortisol sample and can be considered longitudinal, it was nevertheless a short period. It did not provide information about the cortisol trajectories beyond one day. Future research could include cortisol measures that last for a longer period to see if there will be a greater between-group variation in the cortisol development, and potentially any predictive power of the cortisol development to future behavioural changes.
