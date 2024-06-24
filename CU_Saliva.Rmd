@@ -221,8 +221,11 @@ CD_no_plot <- ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   theme_minimal() +
   theme(legend.position = "none") +
   expand_limits(x = range(data_CD_yes$Time)) +
-  labs(title = "CD status: No", x = "Sample Time", y = "") +  # Setting y = "" removes the y-axis label
-  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))
+  labs(title = "CD status: No", x = "Sample Time", y = "") +
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6)) +
+theme(axis.title.y = element_blank(),  # Remove y-axis title
+        axis.text.y = element_blank(),   # Remove y-axis text
+        axis.ticks.y = element_blank())
 
 spaghetti_plots<-CD_yes_plot+CD_no_plot
 ggsave("Plots/spaghetti_plots.png", plot = spaghetti_plots, width = 8, height = 6, dpi = 300)
