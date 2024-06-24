@@ -54,7 +54,7 @@ We first split the participants into a CD and no CD group. The dataset included 
 ![Figure 1](Plots/CD_status_plot.png)
 *Note: Cortisol level trajectories across individuals with CD status and without.*
 
-We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: **[Cortisol \~ Time \* CD + (1\|ID)]**. Figure 2 shows change over time (Time 1 to 7) in each CD condition for each individual.
+We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 1/2,-1/2) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: **[Cortisol \~ Time \* CD + (1\|ID)]**. Figure 2 shows change over time (Time 1 to 7) in each CD condition for each individual.
 
 *Figure 2*
 ![Figure 2](Plots/spaghetti_plots.png)
@@ -74,14 +74,18 @@ We classified participants into low, medium and high CU traits based on the summ
 ![Figure 3](Plots/grouping_plot.png)
 *Note: Cortisol trajectories across CU trait groups and CD category*
 
-We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. We constructed two models; both of whuch had the same dependnet varibale - Cortisol levels. In Model 1, the independent variable was only Time **[Cortisol \~ Time + (1\|ID)]**. In Model 2, the indpeendent variables were Time, Callous-Unemotional traits Grouping (contrast-coded, refer to contrast codes in Table X) and their interaction [Cortisol \~ Time \* Grouping + (1\|ID)].
+We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. We constructed two models; both of whuch had the same dependnet varibale - Cortisol levels. In Model 1, the independent variable was only Time **[Cortisol \~ Time + (1\|ID)]**. In Model 2, the indpeendent variables were Time, Callous-Unemotional traits Grouping (contrast-coded, refer to contrast codes in Table 2) and their interaction **[Cortisol \~ Time \* Grouping + (1\|ID)]**.
+
+*Table 2*
+
+![Table 2](Tables/Contrast_coded_predictors.png)
 
 Model 1: The main effect of Time was significant (F(5, 69030) = 195877, p<.001), suggesting that cortisol levels change over time. 
 
-Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, p<.001) and the interaction with grouping (F(10, 69020.012) = 154.1561, p<.001). The main effect of grouping was non-significant (F(2, 81.985) = 0.9976, p = 0.3732). Table 2 shows the results in terms of the individual contrast-coded predictors. Model comparison using anova() showed that Model 2 was significantly better, and we thus retain this.
+Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, p<.001) and the interaction with grouping (F(10, 69020.012) = 154.1561, p<.001). The main effect of grouping was non-significant (F(2, 81.985) = 0.9976, p = 0.3732). Table 3 shows the results in terms of the individual contrast-coded predictors. Model comparison using anova() showed that Model 2 was significantly better, and we thus retain this.
 
-*Table 2*
-![Table 2](Tables/Table_H2.png)
+*Table 3*
+![Table 3](Tables/Table_H2.png)
 *Note: Results of linear mixed effects regression predicting the cortisol levels*
 
 # Discussion
