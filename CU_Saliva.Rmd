@@ -15,13 +15,14 @@ Load libraries
 library(tidyverse)
 library(foreign)
 library(lme4)
+library(car)
 data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
 
 Data wrangling
 ```{r}
 #Select variables
-data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva7Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, Saliva7done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22, cdspa) %>% mutate(ID = as.factor(ID))
+data_selected<- data %>% select(ID, Saliva1Time, Saliva2Time, Saliva3Time, Saliva4Time, Saliva5Time, Saliva6Time, Saliva1done, Saliva2done, Saliva3done, Saliva4done, Saliva5done, Saliva6done, ICU03, ICU05, ICU13, ICU15, ICU16, ICU17, ICU23, ICU24, ICU02, ICU04, ICU07, ICU08, ICU09, ICU10, ICU11, ICU12, ICU18, ICU20, ICU21, ICU01, ICU06, ICU14, ICU19, ICU22, cdspa) %>% mutate(ID = as.factor(ID))
 
 #Conduct disorder - classify people with or without conduct disorder based on the standardised scores provided in the cdspa variable. People that have 0 are classified as "no" (CD), people that have 1 or more are classified as "yes" (CD)."yes" - 1, "no" - 0
 
@@ -47,7 +48,7 @@ Gather and check missingness in saliva data
 ```{r}
 #Gather saliva / time
 
-data_gather_saliva<- data_summed %>% gather(Time, Saliva, Saliva1Time:Saliva7Time) %>% gather(Completion, Status, Saliva1done: Saliva7done)
+data_gather_saliva<- data_summed %>% gather(Time, Saliva, Saliva1Time:Saliva6Time) %>% gather(Completion, Status, Saliva1done: Saliva6done)
 
 #recode completion/ status data to check missingness
 #give 1 for completed, 0 for not completed
@@ -108,7 +109,7 @@ summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
             upper=mean+se*1.96)%>%tibble()
 summary_Time_CD
 
-ggplot(summary_Time_CD, aes(x = as.numeric(Time), y = mean, group = CD)) +
+ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
   geom_line(aes(lty = as.character(CD), color = CD),
             position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
@@ -118,7 +119,15 @@ ggplot(summary_Time_CD, aes(x = as.numeric(Time), y = mean, group = CD)) +
   guides(lty = "none", shape = "none")+
   theme_classic()+
   labs(x="Sample Time",y="Cortisol Level")+
-scale_x_continuous(breaks=c(1,2,3,4,5,6,7))+
+scale_x_discrete(
+    "Sample Time",
+    labels = c(
+      "Saliva1Time" = "20mins_prior",
+      "Saliva2Time" = "10mins_prior",
+      "Saliva3Time" = "End_Task",
+      "Saliva4Time" = "20mins_after",
+      "Saliva5Time" = "45mins_after",
+      "Saliva6Time" = "60_mins_after"))+
   scale_color_discrete(
   labels = c("No", "Yes"),
   name = "Conduct Disorder Status")
@@ -132,10 +141,11 @@ contrasts(data_grouped$CD) <- c(1/2, -1/2)
 
 data_grouped$Time <- factor(data_grouped$Time)
 
-contrasts(data_grouped$Time) <- contr.poly(7) #polynomial contrast codes 
+contrasts(data_grouped$Time) <- contr.poly(6) #polynomial contrast codes 
 
 mod_H1 <- afex::mixed(Saliva ~ Time*CD + (1|ID), data=data_grouped, check_contrasts = FALSE)
 summary(mod_H1)
+anova(mod_H1, type=3)
 
 #Test assumptions for linear mixed effect models
 
@@ -174,9 +184,10 @@ data_CD_yes <- na.omit(data_CD_yes)
 ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
-  theme(legend.position = "none")+
+  theme(legend.position = "none") +
+  expand_limits(x = range(data_CD_yes$Time))+
   labs(x="Sample Time",y="Cortisol Level")+
-scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+scale_x_continuous(breaks=c(1,2,3,4,5,6))
 ```
 
 
@@ -203,7 +214,7 @@ ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   theme(legend.position = "none") +
   expand_limits(x = range(data_CD_yes$Time))+
   labs(x="Sample Time",y="Cortisol Level")+
-scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+scale_x_continuous(breaks=c(1,2,3,4,5,6))
 ```
 
 Plots including CU traits
@@ -238,7 +249,7 @@ Statistical Analysis (H2)
 ```{r}
 data_CD_yes$Time <- factor(data_CD_yes$Time)
 
-contrasts(data_CD_yes$Time) <- contr.poly(7) #polynomial contrast codes 
+contrasts(data_CD_yes$Time) <- contr.poly(6) #polynomial contrast codes 
 
 contrasts(data_CD_yes$Grouping) <- cbind(c1 =  c(2/3, -1/3, -1/3),
                                  c2 = c(1/2, 0, -1/2))
@@ -246,9 +257,11 @@ contrasts(data_CD_yes$Grouping)
 
 mod_H2 <- afex::mixed(Saliva ~ Time + (1|ID), data=data_CD_yes, check_contrasts = FALSE)
 summary(mod_H2)
+anova(mod_H2, type=3)
 
 mod_H2_group <- afex::mixed(Saliva ~ Time*Grouping + (1|ID), data=data_CD_yes, check_contrasts = FALSE)
 summary(mod_H2_group)
+anova(mod_H2_group, type=3)
 
 anova(mod_H2, mod_H2_group) #significant
 
