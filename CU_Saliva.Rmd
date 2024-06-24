@@ -21,6 +21,7 @@ library(broom.mixed)
 library(knitr)
 library(kableExtra)
 library(xfun)
+library(patchwork)
 data <- read.spss("Data/CEDS_Archived.sav", to.data.frame=TRUE)
 ```
 
@@ -186,14 +187,14 @@ data_CD_yes$CD <- as.factor(data_CD_yes$CD)
 # Remove rows with NA values in 'Time' or 'Saliva'
 data_CD_yes <- na.omit(data_CD_yes)
 
-#library(ggplot2)
+library(ggplot2)
 
-ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
+CD_yes_plot<-ggplot(data_CD_yes, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
   theme(legend.position = "none") +
   expand_limits(x = range(data_CD_yes$Time))+
-  labs(x="Sample Time",y="Cortisol Level")+
+  labs(title = "CD_yes", x="Sample Time",y="Cortisol Level")+
 scale_x_continuous(breaks=c(1,2,3,4,5,6))
 ```
 
@@ -215,13 +216,18 @@ data_CD_no <- na.omit(data_CD_no)
 
 library(ggplot2)
 
-ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
+CD_no_plot<- ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   geom_line() +
   theme_minimal() +
   theme(legend.position = "none") +
   expand_limits(x = range(data_CD_yes$Time))+
-  labs(x="Sample Time",y="Cortisol Level")+
+  labs(title = "CD_no", x="Sample Time",y="Cortisol Level")+
 scale_x_continuous(breaks=c(1,2,3,4,5,6))
+
+ggsave("Plots/CD_no_plot.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
+
+spaghetti_plots<-CD_yes_plot+CD_no_plot
+ggsave("Plots/spaghetti_plots.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
 ```
 
 Plots including CU traits
@@ -238,7 +244,7 @@ summary_Time_Grouping_CD%>%filter(CD == 1)
 
 custom_labels <- c("0" = "No CD", "1" = "Yes CD")
 
-ggplot(summary_Time_Grouping_CD, aes(x = as.numeric(Time), y = mean, group = Grouping)) +
+grouping_plot<-ggplot(summary_Time_Grouping_CD, aes(x = as.numeric(Time), y = mean, group = Grouping)) +
   geom_line(aes(lty = as.character(Grouping), color = Grouping),
             position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
@@ -250,6 +256,8 @@ ggplot(summary_Time_Grouping_CD, aes(x = as.numeric(Time), y = mean, group = Gro
   labs(x="Sample Time",y="Saliva")+
   facet_wrap(~ CD, labeller = labeller(CD = custom_labels))+
 scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
+
+ggsave("Plots/grouping_plot.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
 ```
 
 Statistical Analysis (H2)
