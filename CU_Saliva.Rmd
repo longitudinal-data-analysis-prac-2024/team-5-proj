@@ -224,10 +224,8 @@ CD_no_plot<- ggplot(data_CD_no, aes(x = Time, y = Saliva, colour = ID)) +
   labs(title = "CD_no", x="Sample Time",y="Cortisol Level")+
 scale_x_continuous(breaks=c(1,2,3,4,5,6))
 
-ggsave("Plots/CD_no_plot.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
-
 spaghetti_plots<-CD_yes_plot+CD_no_plot
-ggsave("Plots/spaghetti_plots.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
+ggsave("Plots/spaghetti_plots.png", plot = spaghetti_plots, width = 8, height = 6, dpi = 300)
 ```
 
 Plots including CU traits
@@ -257,7 +255,7 @@ grouping_plot<-ggplot(summary_Time_Grouping_CD, aes(x = as.numeric(Time), y = me
   facet_wrap(~ CD, labeller = labeller(CD = custom_labels))+
 scale_x_continuous(breaks=c(1,2,3,4,5,6,7))
 
-ggsave("Plots/grouping_plot.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
+ggsave("Plots/grouping_plot.png", plot = grouping_plot, width = 8, height = 6, dpi = 300)
 ```
 
 Statistical Analysis (H2)
