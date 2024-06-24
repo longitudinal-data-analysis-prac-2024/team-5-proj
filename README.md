@@ -40,9 +40,9 @@ Social Provocation Task: the task lasted for approximately minutes. Children wer
 
 Children and parents were debriefed at the end of the study, but children were unaware that the game was manipulated.
 
-# **Results**
+# **Analyses**
 
-Participants that did not have a cortisol score for each of the seven time points were removed from analyses.
+We removed the seventh time point because of a lot of missing data. Participants that did not have a cortisol score for each of the six time points were removed from analyses.
 
 **Hypothesis 1**
 
@@ -52,7 +52,7 @@ We wanted to control for the dependency that arises from having repeated saliva 
 
 ![Figure 2](Plots/spaghetti_plots.png)
 
-The main effect of Time (F(5, 312054.08) = 625894.279, p<.001) and the interaction between Time and Conduct Disorder Status (F(5, 312054.08) = 79.595, p<.001) were significant. The main effect of Conduct Disorder status was non-significant (F(1, 390.12) = 0, p = 0.9949). Table X shows the results in terms of the individual contrast-coded predictors.
+The main effect of Time (F(5, 312054.08) = 625894.279, p<.001) and the interaction between Time and Conduct Disorder Status (F(5, 312054.08) = 79.595, p<.001) were significant. The main effect of Conduct Disorder status was non-significant (F(1, 390.12) = 0, p = 0.9949). Table 1 shows the results in terms of the individual contrast-coded predictors.
 
 ![Table 1](Tables/Table_H1.png)
 
@@ -64,12 +64,18 @@ We used a linear mixed effects model. We focused on the subset of the sample in 
 
 Model 1: The main effect of Time was significant (F(5, 69030) = 195877, p<.001), suggesting that cortisol levels change over time. 
 
-Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, p<.001) and the interaction with grouping (F(10, 69020.012) = 154.1561, p<.001). The main effect of grouping was non-significant (F(2, 81.985) = 0.9976, p = 0.3732). Table X shows the results in terms of the individual contrast-coded predictors. Model comparison using anova() showed that Model 2 was significantly better, and we thus retain this.
+Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, p<.001) and the interaction with grouping (F(10, 69020.012) = 154.1561, p<.001). The main effect of grouping was non-significant (F(2, 81.985) = 0.9976, p = 0.3732). Table 2 shows the results in terms of the individual contrast-coded predictors. Model comparison using anova() showed that Model 2 was significantly better, and we thus retain this.
 
 ![Table 2](Tables/Table_H2.png)
 
 # Discussion
 
-limitations: Future research can also consider gathering resting-state cortisol to gain a more complete understanding of the cortisol trajectories. This is because previous literature has suggested that resting-state cortisol is not as subjective to individual differences in immediate reaction towards novel stressors, compared to task-based cortisol (Shoal et al., 2003). Specifically, Shoal et al. (2003) have suggested that the cortisol sample collected at the end of the task could be used as an index of resting-state cortisol level. This was because people had passed the anticipation phase and the stressors were no longer novel, which led to a lower and more habituated cortisol concentration. However, this method may depend on the task used, for example, children in the present study were still provoked by the opponents by the derogatory comments at the end of the task, which would continuously affect cortisol levels. Nevertheless, it might still be useful for future research to collect resting-state cortisol by collecting morning saliva samples.
+H1: The relationship between Cortisol levels and CD Status involves changes in direction over time. Individuals with no CD status have greater linear increase of cortisol score over time. Individuals with CD status cortisol changes at a faster rate and have more changes in curvature.
+
+H2: Having low, medium or high CU traits affects the trajectory of cortisol levels.
+
+**Limitations/ Future Research** 
+
+Future research can also consider gathering resting-state cortisol to gain a more complete understanding of the cortisol trajectories. This is because previous literature has suggested that resting-state cortisol is not as subjective to individual differences in immediate reaction towards novel stressors, compared to task-based cortisol (Shoal et al., 2003). Specifically, Shoal et al. (2003) have suggested that the cortisol sample collected at the end of the task could be used as an index of resting-state cortisol level. This was because people had passed the anticipation phase and the stressors were no longer novel, which led to a lower and more habituated cortisol concentration. However, this method may depend on the task used, for example, children in the present study were still provoked by the opponents by the derogatory comments at the end of the task, which would continuously affect cortisol levels. Nevertheless, it might still be useful for future research to collect resting-state cortisol by collecting morning saliva samples.
 
 Furthermore, while this study used multiple measures of cortisol sample and can be considered longitudinal, it was nevertheless a short period. It did not provide information about the cortisol trajectories beyond one day. Future research could include cortisol measures that last for a longer period to see if there will be a greater between-group variation in the cortisol development, and potentially any predictive power of the cortisol development to future behavioural changes.
