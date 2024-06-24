@@ -109,7 +109,7 @@ summary_Time_CD <-  data_grouped %>% group_by(Time,CD) %>%
             upper=mean+se*1.96)%>%tibble()
 summary_Time_CD
 
-ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
+CD_status_plot<- ggplot(summary_Time_CD, aes(x = Time, y = mean, group = CD)) +
   geom_line(aes(lty = as.character(CD), color = CD),
             position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1,
@@ -131,6 +131,8 @@ scale_x_discrete(
   scale_color_discrete(
   labels = c("No", "Yes"),
   name = "Conduct Disorder Status")
+
+ggsave("Plots/CD_status_plot.png", plot = CD_status_plot, width = 8, height = 6, dpi = 300)
 ```
 Statistical Analysis (H1)
 
@@ -227,7 +229,7 @@ summary_Time_Grouping_CD <-  data_grouped %>% group_by(Time, Grouping, CD) %>%
             se=sd/sqrt(n),
             lower=mean-se*1.96,
             upper=mean+se*1.96)
-summary_Time_Grouping_CD
+summary_Time_Grouping_CD%>%filter(CD == 1)
 
 custom_labels <- c("0" = "No CD", "1" = "Yes CD")
 

@@ -48,13 +48,15 @@ Participants that did not have a cortisol score for each of the seven time point
 
 We wanted to control for the dependency that arises from having repeated saliva samples, we thus used a linear mixed effects model. The dependent variable was the cortisol levels (numeric), the independent variables was CD status (contrast-coded, 0-1) and Time was polynomial contrast coded. This choice was made because Time is ordinal and equally spaced. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* CD + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and condition.
 
-The results of the model are presented in Table X.
+The main effect of Time (F(5, 312054.08) = 625894.279, p<.001) and the interaction between Time and Conduct Disorder Status (F(5, 312054.08) = 79.595, p<.001) were significant. The main effect of Conduct Disorder status was non-significant (F(1, 390.12) = 0, p = 0.9949). Table X shows the results in terms of the individual contrast-coded predictors.
 
 **Hypothesis 2**
 
-We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. The dependent variable was the cortisol levels (numeric), the independent variables was callous unemotional traits grouping (contrast-coded, refer to contrast codes in Table X) and Time was polynomial contrast coded. A random effect of participant ID was included in the model. The final model was: [Cortisol \~ Time \* Grouping + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and CU grouping.
+We used a linear mixed effects model. We focused on the subset of the sample in the CD condition. We constructed two models; both of whuch had the same dependnet varibale - Cortisol levels. In Model 1, the independent variable was only Time [Cortisol \~ Time + (1\|ID)]. In Model 2, the indpeendent variables were Time, Callous-Unemotional traits Grouping (contrast-coded, refer to contrast codes in Table X) and their interaction [Cortisol \~ Time \* Grouping + (1\|ID)]. Figure X shows change over time (Time 1 to 7) and CU grouping.
 
-The results of the model are presented in Table X.
+Model 1: The main effect of Time was significant (F(5, 69030) = 195877, p<.001), suggesting that cortisol levels change over time. 
+
+Model 2: The main effect of Time was significant (F(5, 69020.004) = 57381.5071, p<.001) and the interaction with grouping (F(10, 69020.012) = 154.1561, p<.001). The main effect of grouping was non-significant (F(2, 81.985) = 0.9976, p = 0.3732). Table X shows the results in terms of the individual contrast-coded predictors. Model comparison using anova() showed that Model 2 was significantly better, and we thus retain this.
 
 # Discussion
 
